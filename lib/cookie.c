@@ -289,6 +289,34 @@ static void strstore(char **str, const char *newstr)
   *str = strdup(newstr);
 }
 
+/*
+ * remove_expired() removes expired cookies.
+ */
+static void remove_expired(struct CookieInfo *cookies)
+{
+  struct Cookie *co, *nx, *pv;
+  curl_off_t now = (curl_off_t)time(NULL);
+
+  co = cookies->cookies;
+  pv = NULL;
+  while(co) {
+    nx = co->next;
+    if((co->expirestr || co->maxage) && co->expires < now) {
+      if(co == cookies->cookies) {
+        cookies->cookies = co->next;
+      }
+      else {
+        pv->next = co->next;
+      }
+      cookies->numcookies--;
+      freecookie(co);
+    }
+    else {
+      pv = co;
+    }
+    co = nx;
+  }
+}
 
 /****************************************************************************
  *
@@ -740,6 +768,9 @@ Curl_cookie_add(struct SessionHandle *data,
      superceeds an already existing cookie, which it may if the previous have
      the same domain and path as this */
 
+  /* at first, remove expired cookies */
+  remove_expired(c);
+
   clist = c->cookies;
   replace_old = FALSE;
   while(clist) {
@@ -953,6 +984,9 @@ struct Cookie *Curl_cookie_getlist(struct CookieInfo *c,
 
   if(!c || !c->cookies)
     return NULL; /* no cookie struct or no cookies in the struct */
+
+  /* at first, remove expired cookies */
+  remove_expired(c);
 
   co = c->cookies;
 
@@ -1195,6 +1229,9 @@ static int cookie_output(struct CookieInfo *c, const char *dumphere)
     /* If there are no known cookies, we don't write or even create any
        destination file */
     return 0;
+
+  /* at first, remove expired cookies */
+  remove_expired(c);
 
   if(strequal("-", dumphere)) {
     /* use stdout */
