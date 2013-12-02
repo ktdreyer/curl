@@ -23697,18 +23697,6 @@ fi
         { $as_echo "$as_me:${as_lineno-$LINENO}: detected NSS version $version" >&5
 $as_echo "$as_me: detected NSS version $version" >&6;}
 
-                        ac_fn_c_check_func "$LINENO" "NSS_InitContext" "ac_cv_func_NSS_InitContext"
-if test "x$ac_cv_func_NSS_InitContext" = xyes; then :
-
-
-$as_echo "#define HAVE_NSS_INITCONTEXT 1" >>confdefs.h
-
-          HAVE_NSS_INITCONTEXT=1
-
-
-fi
-
-
                                         if test "x$cross_compiling" != "xyes"; then
           LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$nssprefix/lib$libsuff"
           export LD_LIBRARY_PATH
